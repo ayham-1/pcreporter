@@ -1,2 +1,4 @@
-numpy>=1.5.1
-scipy
+psutil
+python-telegram-bot==21.3
+requests
+uptime

@@ -51,7 +51,7 @@ if extras_require:
 # are installed.
 # https://packaging.python.org/guides/single-sourcing-package-version/
 meta = {}
-exec(read("package_name/__meta__.py"), meta)
+exec(read("pcreporter/__meta__.py"), meta)
 
 
 # Import the README and use it as the long-description.
@@ -82,20 +82,6 @@ elif readme_ext.lower() == ".md":
     long_description_content_type = "text/markdown"
 else:
     long_description_content_type = "text/plain"
-
-
-class PyTest(TestCommand):
-    """Support setup.py test."""
-
-    def finalize_options(self):
-        TestCommand.finalize_options(self)
-        self.test_args = []
-        self.test_suite = True
-
-    def run_tests(self):
-        import pytest
-
-        pytest.main(self.test_args)
 
 
 class UploadCommand(Command):
@@ -170,7 +156,11 @@ setup(
     # Could also include keywords, download_url, project_urls, etc.
     # Custom commands
     cmdclass={
-        "test": PyTest,
         "upload": UploadCommand,
+    },
+    entry_points={
+        "console_scripts": [
+            "pcreporter=pcreporter.cli:main",
+        ],
     },
 )

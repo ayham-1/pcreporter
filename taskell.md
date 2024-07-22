@@ -1,16 +1,14 @@
 ## To Do
 
-- gps-monitor
-- process-table watcher
-- mode switching
-    > message sent to telegram to employ defensive tactics
+- temp sensor
 - integration with sway stuff
 - chmod executable bit switch monitor
 - features togglable with buttons
 
 ## Doing
 
-- gps-reporter
+- mode switching
+    > message sent to telegram to employ defensive tactics
 
 ## Done
 

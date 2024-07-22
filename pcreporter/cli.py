@@ -11,12 +11,12 @@ logger = logging.getLogger(__name__)
 from telegram import ForceReply, Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-import pcreporter.state as state
+import pcreporter.state
 from pcreporter.info.overview import info_overview
 from pcreporter.info.usb import info_usb
 from pcreporter.monitor.usb import monitor_usb_start, monitor_usb_stop
 
-user_chat_id = None
+state = pcreporter.state.State()
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -26,8 +26,9 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None or user is None:
         return
 
-    state.__CHAT_ID__ = update.message.chat_id
-    logger.info(f"state.__CHAT_ID__: {state.__CHAT_ID__}")
+    # state.__CHAT_ID__ = update.message.chat_id
+    # logger.info(f"state.__CHAT_ID__: {state.__CHAT_ID__}")
+    state.read_config()
 
     await update.message.reply_html(
         rf"Hi {user.mention_html()}!",
@@ -49,6 +50,14 @@ async def cmd_usb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_html(info_usb())
 
 
+async def cmd_defensive_toggle(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    if update.message is None:
+        return
+    await update.message.reply_html(info_usb())
+
+
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Log the error and send a telegram message to notify the developer."""
     if context is None:
@@ -62,6 +71,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 
     # list of strings rather than a single string, so we have to join them together.
 
+    assert context.error
     tb_list = traceback.format_exception(
         None, context.error, context.error.__traceback__
     )
@@ -85,6 +95,8 @@ def main():
 
     # on different commands - answer in Telegram
     application.add_handler(CommandHandler("start", start))
+
+    application.add_handler(CommandHandler("defensive", cmd_defensive_toggle))
 
     application.add_handler(CommandHandler("overview", cmd_overview))
     application.add_handler(CommandHandler("ping", cmd_overview))

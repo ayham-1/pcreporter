@@ -160,7 +160,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "pcreporter=pcreporter.cli:main",
+            "pc_reporter=pcreporter.cli:main",
         ],
     },
 )

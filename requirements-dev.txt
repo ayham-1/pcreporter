@@ -1,3 +1,1 @@
-black==24.3.0
-identify>=1.4.20
-pre-commit
+setuptools

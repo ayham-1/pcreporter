@@ -4,4 +4,4 @@
 
 pip3 install -r requirements.txt
 pip3 install --editable .
-pcreporter
+pc_reporter

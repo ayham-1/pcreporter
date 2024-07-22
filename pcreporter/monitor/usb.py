@@ -14,13 +14,14 @@ device_info_str = (
 
 
 def on_connect(device_id, device_info):
-    if not telegram_bot or not state.__CHAT_ID__:
+    assert not state is None
+    if not telegram_bot or not state.CHAT_ID:
         return
 
     try:
         asyncio.run(
             telegram_bot.send_message(
-                state.__CHAT_ID__,
+                state.CHAT_ID,
                 "Detected new USB connection: "
                 + device_info_str(device_info=device_info),
             )
@@ -30,13 +31,14 @@ def on_connect(device_id, device_info):
 
 
 def on_disconnect(device_id, device_info):
-    if not telegram_bot or not state.__CHAT_ID__:
+    assert not state is None
+    if not telegram_bot or not state.CHAT_ID:
         return
 
     try:
         asyncio.run(
             telegram_bot.send_message(
-                state.__CHAT_ID__,
+                state.CHAT_ID,
                 "Detected USB disconnection: "
                 + device_info_str(device_info=device_info),
             )

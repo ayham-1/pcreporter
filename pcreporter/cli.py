@@ -6,17 +6,16 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 logging.getLogger("httpx").setLevel(logging.WARNING)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("pcreporter")
 
 from telegram import ForceReply, Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-import pcreporter.state
 from pcreporter.info.overview import info_overview
 from pcreporter.info.usb import info_usb
 from pcreporter.monitor.usb import monitor_usb_start, monitor_usb_stop
 
-state = pcreporter.state.State()
+import pcreporter.state as state
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -28,7 +27,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # state.__CHAT_ID__ = update.message.chat_id
     # logger.info(f"state.__CHAT_ID__: {state.__CHAT_ID__}")
-    state.read_config()
 
     await update.message.reply_html(
         rf"Hi {user.mention_html()}!",
@@ -55,7 +53,10 @@ async def cmd_defensive_toggle(
 ) -> None:
     if update.message is None:
         return
-    await update.message.reply_html(info_usb())
+    state.IS_DEFENSIVE = not state.IS_DEFENSIVE
+    await update.message.reply_html(
+        "Defensive mode toggled, current state: " + str(state.IS_DEFENSIVE)
+    )
 
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -63,13 +64,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     if context is None:
         return
 
-    # Log the error before we do anything else, so we can see it even if something breaks.
-
     logger.error("Exception while handling an update:", exc_info=context.error)
-
-    # traceback.format_exception returns the usual python message about an exception, but as a
-
-    # list of strings rather than a single string, so we have to join them together.
 
     assert context.error
     tb_list = traceback.format_exception(
@@ -85,11 +80,11 @@ def main():
     # Create the Application and pass it your bot's token.
 
     token = os.getenv("TELEGRAM_TOKEN")
-
     if token is None:
         logger.error("TELEGRAM_TOKEN is not set")
         return
 
+    state.read_config()
     application = Application.builder().token(token).build()
     application.add_error_handler(error_handler)
 

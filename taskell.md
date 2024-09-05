@@ -7,10 +7,10 @@
 
 ## Doing
 
-- mode switching
-    > message sent to telegram to employ defensive tactics
 
 ## Done
 
 - usb-reporter
 - usb-monitor
+- mode switching
+    > message sent to telegram to employ defensive tactics

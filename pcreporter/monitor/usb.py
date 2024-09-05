@@ -1,3 +1,4 @@
+import sys
 import asyncio
 
 from usbmonitor import USBMonitor
@@ -13,7 +14,27 @@ device_info_str = (
 )
 
 
-def on_connect(device_id, device_info):
+def __usb_defensive():
+    assert not state is None
+    if not state.IS_DEFENSIVE:
+        return True
+
+    print("Defensive mode enabled\nUSB change detected, shutting down...")
+    if sys.platform == "win32":
+        import ctypes
+
+        user32 = ctypes.WinDLL("user32")
+        user32.ExitWindowsEx(0x00000008, 0x00000000)
+
+    else:
+        import os
+
+        os.system("systemctl poweroff")
+
+    exit(1)
+
+
+def __usb_on_connect(device_id, device_info):
     assert not state is None
     if not telegram_bot or not state.CHAT_ID:
         return
@@ -26,11 +47,12 @@ def on_connect(device_id, device_info):
                 + device_info_str(device_info=device_info),
             )
         )
+        __usb_defensive()
     except Exception as _:
         pass
 
 
-def on_disconnect(device_id, device_info):
+def __usb_on_disconnect(device_id, device_info):
     assert not state is None
     if not telegram_bot or not state.CHAT_ID:
         return
@@ -43,6 +65,7 @@ def on_disconnect(device_id, device_info):
                 + device_info_str(device_info=device_info),
             )
         )
+        __usb_defensive()
     except Exception as _:
         pass
 
@@ -55,7 +78,9 @@ def monitor_usb_start(bot):
     monitor = USBMonitor()
 
     # Start the daemon
-    monitor.start_monitoring(on_connect=on_connect, on_disconnect=on_disconnect)
+    monitor.start_monitoring(
+        on_connect=__usb_on_connect, on_disconnect=__usb_on_disconnect
+    )
 
 
 def monitor_usb_stop():

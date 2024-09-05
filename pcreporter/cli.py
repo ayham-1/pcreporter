@@ -48,14 +48,25 @@ async def cmd_usb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_html(info_usb())
 
 
-async def cmd_defensive_toggle(
+async def cmd_defensive_enable(
     update: Update, context: ContextTypes.DEFAULT_TYPE
 ) -> None:
     if update.message is None:
         return
-    state.IS_DEFENSIVE = not state.IS_DEFENSIVE
+    state.IS_DEFENSIVE = True
     await update.message.reply_html(
-        "Defensive mode toggled, current state: " + str(state.IS_DEFENSIVE)
+        "Defensive mode enabled, current state: " + str(state.IS_DEFENSIVE)
+    )
+
+
+async def cmd_defensive_disable(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    if update.message is None:
+        return
+    state.IS_DEFENSIVE = False
+    await update.message.reply_html(
+        "Defensive mode disabled, current state: " + str(state.IS_DEFENSIVE)
     )
 
 
@@ -91,7 +102,8 @@ def main():
     # on different commands - answer in Telegram
     application.add_handler(CommandHandler("start", start))
 
-    application.add_handler(CommandHandler("defensive", cmd_defensive_toggle))
+    application.add_handler(CommandHandler("defensive", cmd_defensive_enable))
+    application.add_handler(CommandHandler("observe", cmd_defensive_disable))
 
     application.add_handler(CommandHandler("overview", cmd_overview))
     application.add_handler(CommandHandler("ping", cmd_overview))

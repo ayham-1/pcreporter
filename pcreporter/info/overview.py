@@ -9,6 +9,9 @@ import uptime
 from requests import get
 
 
+import pcreporter.state as state
+
+
 def info_overview():
     _os = platform.system()
     _os_version = platform.version()
@@ -38,6 +41,7 @@ def info_overview():
 
     return f"""
 <b>Reporting as {_hostname}</b>
+Mode: {'Defensive' if state.IS_DEFENSIVE else 'Normal'}
 
 Uptime: {_uptime}
 

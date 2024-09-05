@@ -23,13 +23,15 @@ def read_config():
     if not platform.system() == "Windows":
         if os.path.exists("/etc/pcreporter/pcreporter.conf"):
             conf_to_read = "/etc/pcreporter/pcreporter.conf"
-        elif os.path.exists(
+        elif "XDG_CONFIG_HOME" in os.environ and os.path.exists(
             os.path.join(os.environ["XDG_CONFIG_HOME"], "pcreporter.conf")
         ):
             conf_to_read = os.path.join(
                 os.environ["XDG_CONFIG_HOME"], "pcreporter.conf"
             )
-        elif os.path.exists(os.path.join(os.environ["HOME"], ".pcreporter.conf")):
+        elif "HOME" in os.environ and os.path.exists(
+            os.path.join(os.environ["HOME"], ".pcreporter.conf")
+        ):
             conf_to_read = os.path.join(os.environ["HOME"], ".pcreporter.conf")
     elif platform.system() == "Windows" and os.path.exists(
         os.path.join(os.environ["APPDATA"], "pcreporter.conf")

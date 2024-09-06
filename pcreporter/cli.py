@@ -12,7 +12,7 @@ from telegram import ForceReply, Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
 from pcreporter.info.overview import info_overview
-from pcreporter.info.usb import info_usb
+from pcreporter.info.temp import info_temp
 from pcreporter.monitor.usb import monitor_usb_start, monitor_usb_stop
 
 import pcreporter.state as state
@@ -39,6 +39,13 @@ async def cmd_overview(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if update.message is None:
         return
     await update.message.reply_html(info_overview())
+
+
+async def cmd_temp(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Send the temp message when the command /overview is issued."""
+    if update.message is None:
+        return
+    await update.message.reply_html(info_temp())
 
 
 async def cmd_usb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -107,6 +114,8 @@ def main():
 
     application.add_handler(CommandHandler("overview", cmd_overview))
     application.add_handler(CommandHandler("ping", cmd_overview))
+
+    application.add_handler(CommandHandler("temp", cmd_temp))
 
     application.add_handler(CommandHandler("usb", cmd_usb))
 

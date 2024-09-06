@@ -1,12 +1,11 @@
 ## To Do
 
-- temp sensor
-- integration with sway stuff
 - chmod executable bit switch monitor
 - features togglable with buttons
 
 ## Doing
 
+- lock screen
 
 ## Done
 
@@ -14,3 +13,4 @@
 - usb-monitor
 - mode switching
     > message sent to telegram to employ defensive tactics
+- temp sensor

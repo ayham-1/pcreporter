@@ -9,7 +9,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("pcreporter")
 
-from telegram import ForceReply, Update
+from telegram import ForceReply, Update, KeyboardButton, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 from pcreporter.info.overview import info_overview
@@ -24,41 +24,25 @@ from pcreporter.fn.lock_screen import fn_lock_screen
 import pcreporter.state as state
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send a message when the command /start is issued."""
-    user = update.effective_user
-
-    if update.message is None or user is None:
-        return
-
-    # state.__CHAT_ID__ = update.message.chat_id
-    # logger.info(f"state.__CHAT_ID__: {state.__CHAT_ID__}")
-
-    await update.message.reply_html(
-        rf"Hi {user.mention_html()}!",
-        reply_markup=ForceReply(selective=True),
-    )
-
-
 async def cmd_overview(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send the overview message when the command /overview is issued."""
     if update.message is None:
         return
-    await update.message.reply_html(info_overview())
+    await update.message.reply_html(info_overview(), reply_markup=get_cmds_keyboard())
 
 
 async def cmd_temp(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send the temp message when the command /overview is issued."""
     if update.message is None:
         return
-    await update.message.reply_html(info_temp())
+    await update.message.reply_html(info_temp(), reply_markup=get_cmds_keyboard())
 
 
 async def cmd_usb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send the overview message when the command /usb is issued."""
     if update.message is None:
         return
-    await update.message.reply_html(info_usb())
+    await update.message.reply_html(info_usb(), reply_markup=get_cmds_keyboard())
 
 
 async def cmd_defensive_enable(
@@ -68,7 +52,8 @@ async def cmd_defensive_enable(
         return
     state.IS_DEFENSIVE = True
     await update.message.reply_html(
-        "Defensive mode enabled, current state: " + str(state.IS_DEFENSIVE)
+        "Defensive mode enabled, current state: " + str(state.IS_DEFENSIVE),
+        reply_markup=get_cmds_keyboard(),
     )
 
 
@@ -79,7 +64,8 @@ async def cmd_defensive_disable(
         return
     state.IS_DEFENSIVE = False
     await update.message.reply_html(
-        "Defensive mode disabled, current state: " + str(state.IS_DEFENSIVE)
+        "Defensive mode disabled, current state: " + str(state.IS_DEFENSIVE),
+        reply_markup=get_cmds_keyboard(),
     )
 
 
@@ -88,7 +74,7 @@ async def cmd_fn_lock_screen(
 ) -> None:
     if update.message is None:
         return
-    await update.message.reply_html(fn_lock_screen())
+    await update.message.reply_html(fn_lock_screen(), reply_markup=get_cmds_keyboard())
 
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -128,6 +114,22 @@ async def run_polling(application):
         logger.info("Polling stopped...")
 
 
+cmds = {
+    "defensive": cmd_defensive_enable,
+    "observe": cmd_defensive_disable,
+    "overview": cmd_overview,
+    "ping": cmd_overview,
+    "temp": cmd_temp,
+    "usb": cmd_usb,
+    "lockscrn": cmd_fn_lock_screen,
+}
+keyboard = [[]]
+
+
+def get_cmds_keyboard():
+    return ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=False)
+
+
 async def __main():
     if not good_permissions():
         logger.error("Invalid permissions, ensure normal user permissions")
@@ -139,32 +141,33 @@ async def __main():
         return
 
     state.read_config()
+
+    # add rows of three to keyboard
+    for cmd in cmds.keys():
+        if len(keyboard[-1]) == 3:
+            keyboard.append([])
+
+        keyboard[-1].append("/" + cmd)
+
     application = ApplicationBuilder().token(token).build()
     await application.initialize()
     application.add_error_handler(error_handler)
 
-    # on different commands - answer in Telegram
-    application.add_handler(CommandHandler("start", start))
-
-    application.add_handler(CommandHandler("defensive", cmd_defensive_enable))
-    application.add_handler(CommandHandler("observe", cmd_defensive_disable))
-
-    application.add_handler(CommandHandler("overview", cmd_overview))
-    application.add_handler(CommandHandler("ping", cmd_overview))
-    application.add_handler(CommandHandler("temp", cmd_temp))
-    application.add_handler(CommandHandler("usb", cmd_usb))
-    application.add_handler(CommandHandler("lockscrn", cmd_fn_lock_screen))
+    for cmd, handler in cmds.items():
+        application.add_handler(CommandHandler(cmd, handler))
 
     try:
         import socket
 
         monitor_usb_start(application.bot)
-        # application.run_polling(allowed_updates=Update.ALL_TYPES)
-        # bot_task = asyncio.create_task(application.start())
-
         await application.bot.send_message(
             state.CHAT_ID, f"Hello, reporting as {socket.gethostname()}"
         )
+
+        await application.bot.send_message(
+            state.CHAT_ID, "Select an option", reply_markup=get_cmds_keyboard()
+        )
+
         await asyncio.gather(
             run_polling(application),  # Run the bot polling
         )

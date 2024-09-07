@@ -9,8 +9,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger("pcreporter")
 
-from telegram import ForceReply, Update, KeyboardButton, ReplyKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram import (
+    ForceReply,
+    Update,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
+from telegram.ext import (
+    MessageHandler,
+    ApplicationBuilder,
+    CommandHandler,
+    CallbackQueryHandler,
+    ContextTypes,
+    filters,
+)
 
 from pcreporter.info.overview import info_overview
 from pcreporter.info.temp import info_temp
@@ -19,6 +33,7 @@ from pcreporter.info.usb import info_usb
 from pcreporter.monitor.usb import monitor_usb_start, monitor_usb_stop
 
 from pcreporter.fn.lock_screen import fn_lock_screen
+from pcreporter.fn.shutdown import fn_shutdown
 
 
 import pcreporter.state as state
@@ -77,6 +92,37 @@ async def cmd_fn_lock_screen(
     await update.message.reply_html(fn_lock_screen(), reply_markup=get_cmds_keyboard())
 
 
+ASKING_SHUTDOWN = False
+
+
+async def cmd_fn_shutdown(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message is None:
+        return
+    await update.message.reply_html(
+        "Are you sure you want to shutdown the system?",
+        reply_markup=ReplyKeyboardMarkup([["Yes", "No"]]),
+    )
+    global ASKING_SHUTDOWN
+    ASKING_SHUTDOWN = True
+
+
+async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message is None:
+        return
+    global ASKING_SHUTDOWN
+    if ASKING_SHUTDOWN and update.message.text == "Yes":
+        await update.message.reply_html(fn_shutdown(), reply_markup=get_cmds_keyboard())
+        return
+    elif ASKING_SHUTDOWN and update.message.text == "No":
+        await update.message.reply_html(
+            "Shutdown cancelled", reply_markup=get_cmds_keyboard()
+        )
+    else:
+        await update.message.reply_text(
+            "I'm sorry, I didn't understand that command. Please try again."
+        )
+
+
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Log the error and send a telegram message to notify the developer."""
     if context is None:
@@ -117,11 +163,11 @@ async def run_polling(application):
 cmds = {
     "defensive": cmd_defensive_enable,
     "observe": cmd_defensive_disable,
-    "overview": cmd_overview,
     "ping": cmd_overview,
     "temp": cmd_temp,
     "usb": cmd_usb,
     "lockscrn": cmd_fn_lock_screen,
+    "shutdown": cmd_fn_shutdown,
 }
 keyboard = [[]]
 
@@ -142,9 +188,8 @@ async def __main():
 
     state.read_config()
 
-    # add rows of three to keyboard
     for cmd in cmds.keys():
-        if len(keyboard[-1]) == 3:
+        if len(keyboard[-1]) % 3 == 0:
             keyboard.append([])
 
         keyboard[-1].append("/" + cmd)
@@ -152,6 +197,8 @@ async def __main():
     application = ApplicationBuilder().token(token).build()
     await application.initialize()
     application.add_error_handler(error_handler)
+
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
 
     for cmd, handler in cmds.items():
         application.add_handler(CommandHandler(cmd, handler))
@@ -169,7 +216,7 @@ async def __main():
         )
 
         await asyncio.gather(
-            run_polling(application),  # Run the bot polling
+            run_polling(application),
         )
         monitor_usb_stop()
     except KeyboardInterrupt:

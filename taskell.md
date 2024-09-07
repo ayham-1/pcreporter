@@ -1,11 +1,9 @@
 ## To Do
 
-- chmod executable bit switch monitor
-- features togglable with buttons
 
 ## Doing
 
-- lock screen
+- features togglable with buttons
 
 ## Done
 
@@ -14,3 +12,4 @@
 - mode switching
     > message sent to telegram to employ defensive tactics
 - temp sensor
+- lock screen

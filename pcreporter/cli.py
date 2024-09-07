@@ -105,9 +105,13 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     logger.error(tb_string)
 
 
+def good_permissions():
+    return os.getuid() == 0  # windows sucks haha
+
+
 def main():
-    """Start the bot."""
-    # Create the Application and pass it your bot's token.
+    if not good_permissions():
+        logger.error("Invalid permissions, ensure normal user permissions")
 
     token = os.getenv("TELEGRAM_TOKEN")
     if token is None:

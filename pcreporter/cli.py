@@ -2,13 +2,15 @@ import traceback
 import logging
 import os
 
+import asyncio
+
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 logger = logging.getLogger("pcreporter")
 
 from telegram import ForceReply, Update
-from telegram.ext import Application, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 from pcreporter.info.overview import info_overview
 from pcreporter.info.temp import info_temp
@@ -106,12 +108,30 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 
 
 def good_permissions():
-    return os.getuid() == 0  # windows sucks haha
+    return not os.getuid() == 0  # windows sucks haha
 
 
-def main():
+async def run_polling(application):
+    """Imitate the behavior of application.run_polling()."""
+    # Start polling
+    await application.start()
+    logger.info("Polling started...")
+
+    # Keep the bot running until it is stopped
+    try:
+        await application.updater.start_polling()  # Start polling for updates
+        await asyncio.Event().wait()  # Run indefinitely
+    finally:
+        # Gracefully shut down the bot
+        await application.updater.stop()
+        await application.stop()
+        logger.info("Polling stopped...")
+
+
+async def __main():
     if not good_permissions():
         logger.error("Invalid permissions, ensure normal user permissions")
+        exit(1)
 
     token = os.getenv("TELEGRAM_TOKEN")
     if token is None:
@@ -119,7 +139,8 @@ def main():
         return
 
     state.read_config()
-    application = Application.builder().token(token).build()
+    application = ApplicationBuilder().token(token).build()
+    await application.initialize()
     application.add_error_handler(error_handler)
 
     # on different commands - answer in Telegram
@@ -134,9 +155,29 @@ def main():
     application.add_handler(CommandHandler("usb", cmd_usb))
     application.add_handler(CommandHandler("lockscrn", cmd_fn_lock_screen))
 
-    # Run the bot until the user presses Ctrl-C
-    logger.warn("Message the bot with /start to get started")
+    try:
+        import socket
 
-    monitor_usb_start(application.bot)
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
-    monitor_usb_stop()
+        monitor_usb_start(application.bot)
+        # application.run_polling(allowed_updates=Update.ALL_TYPES)
+        # bot_task = asyncio.create_task(application.start())
+
+        await application.bot.send_message(
+            state.CHAT_ID, f"Hello, reporting as {socket.gethostname()}"
+        )
+        await asyncio.gather(
+            run_polling(application),  # Run the bot polling
+        )
+        monitor_usb_stop()
+    except KeyboardInterrupt:
+        logger.info("Recieved Ctrl + C. Shutting down...")
+    finally:
+        await application.bot.send_message(
+            state.CHAT_ID, "Farewell, bot is shutting down"
+        )
+        logger.info("Shut down")
+        exit(0)
+
+
+def main():
+    asyncio.run(__main())

@@ -13,11 +13,11 @@ this = sys.modules[__name__]
 
 CHAT_ID = None
 IS_DEFENSIVE = False
+CMD_LOCKSCRN = None
 
 
 def read_config():
     """Read configuration file into self."""
-    global CHAT_ID, IS_DEFENSIVE
     conf_to_read = None
 
     if not platform.system() == "Windows":
@@ -59,9 +59,15 @@ def read_config():
                 )
                 continue
 
+            global CHAT_ID, IS_DEFENSIVE, CMD_LOCKSCRN
             if line[0] == "CHAT_ID":
                 CHAT_ID = int(line[1])
             if line[0] == "IS_DEFENSIVE":
-                IS_DEFENSIVE = bool(line[1])
+                if line[1].strip() == "false":
+                    IS_DEFENSIVE = False
+                else:
+                    IS_DEFENSIVE = True
+            if line[0] == "CMD_LOCKSCRN":
+                CMD_LOCKSCRN = line[1].strip()
 
             line_num += 1

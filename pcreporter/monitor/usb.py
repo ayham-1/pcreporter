@@ -1,10 +1,13 @@
 import sys
+import logging
 import asyncio
 
 from usbmonitor import USBMonitor
 from usbmonitor.attributes import ID_MODEL, ID_MODEL_ID, ID_VENDOR_ID
 
 import pcreporter.state as state
+
+logger = logging.getLogger("pcreporter")
 
 monitor = None
 telegram_bot = None
@@ -15,11 +18,7 @@ device_info_str = (
 
 
 def __usb_defensive():
-    assert not state is None
-    if not state.IS_DEFENSIVE:
-        return True
-
-    print("Defensive mode enabled\nUSB change detected, shutting down...")
+    logger.warn("Defensive mode enabled\nUSB change detected, shutting down...")
     if sys.platform == "win32":
         import ctypes
 
@@ -46,7 +45,13 @@ def __usb_on_connect(device_id, device_info):
                 + device_info_str(device_info=device_info),
             )
         )
-        __usb_defensive()
+        if state.IS_DEFENSIVE:
+            asyncio.run(
+                telegram_bot.send_message(
+                    state.CHAT_ID, "Defensive mode enabled, shutting down..."
+                )
+            )
+            __usb_defensive()
     except Exception as _:
         pass
 
@@ -64,7 +69,13 @@ def __usb_on_disconnect(device_id, device_info):
                 + device_info_str(device_info=device_info),
             )
         )
-        __usb_defensive()
+        if state.IS_DEFENSIVE:
+            asyncio.run(
+                telegram_bot.send_message(
+                    state.CHAT_ID, "Defensive mode enabled, shutting down..."
+                )
+            )
+            __usb_defensive()
     except Exception as _:
         pass
 

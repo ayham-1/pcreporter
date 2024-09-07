@@ -5,7 +5,6 @@ import os
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
-logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger("pcreporter")
 
 from telegram import ForceReply, Update
@@ -13,7 +12,12 @@ from telegram.ext import Application, CommandHandler, ContextTypes
 
 from pcreporter.info.overview import info_overview
 from pcreporter.info.temp import info_temp
+from pcreporter.info.usb import info_usb
+
 from pcreporter.monitor.usb import monitor_usb_start, monitor_usb_stop
+
+from pcreporter.fn.lock_screen import fn_lock_screen
+
 
 import pcreporter.state as state
 
@@ -77,6 +81,14 @@ async def cmd_defensive_disable(
     )
 
 
+async def cmd_fn_lock_screen(
+    update: Update, context: ContextTypes.DEFAULT_TYPE
+) -> None:
+    if update.message is None:
+        return
+    await update.message.reply_html(fn_lock_screen())
+
+
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Log the error and send a telegram message to notify the developer."""
     if context is None:
@@ -114,10 +126,9 @@ def main():
 
     application.add_handler(CommandHandler("overview", cmd_overview))
     application.add_handler(CommandHandler("ping", cmd_overview))
-
     application.add_handler(CommandHandler("temp", cmd_temp))
-
     application.add_handler(CommandHandler("usb", cmd_usb))
+    application.add_handler(CommandHandler("lockscrn", cmd_fn_lock_screen))
 
     # Run the bot until the user presses Ctrl-C
     logger.warn("Message the bot with /start to get started")

@@ -3,7 +3,6 @@
 
 ## Doing
 
-- systemd user service
 
 ## Done
 
@@ -15,3 +14,4 @@
 - lock screen
 - features togglable with buttons
 - allow TOKEN to be in state
+- systemd user service

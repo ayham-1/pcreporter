@@ -34,6 +34,11 @@ def read_config():
             os.path.join(os.environ["HOME"], ".pcreporter.conf")
         ):
             conf_to_read = os.path.join(os.environ["HOME"], ".pcreporter.conf")
+        else:
+            config_home = os.environ.get(
+                "XDG_CONFIG_HOME", os.path.join(os.path.expanduser("~"), ".config")
+            )
+            conf_to_read = os.path.join(config_home, "pcreporter.conf")
     elif platform.system() == "Windows" and os.path.exists(
         os.path.join(os.environ["APPDATA"], "pcreporter.conf")
     ):
@@ -41,8 +46,8 @@ def read_config():
 
     if conf_to_read == None and os.path.exists("pcreporter.conf"):
         conf_to_read = "pcreporter.conf"
-    else:
-        raise FileNotFoundError("Configuration file not found.")
+    elif conf_to_read == None:
+        raise FileNotFoundError(f"Configuration, {conf_to_read}, file not found.")
 
     with open(conf_to_read, "r") as f:
         line_num = 1

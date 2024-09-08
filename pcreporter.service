@@ -1,3 +1,6 @@
 [Unit]
 Description=pcreporter
+
+[Service]
 ExecStart=pc_reporter
+Environment="XDG_CONFIG_HOME=%h/.config/"

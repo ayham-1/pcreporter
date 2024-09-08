@@ -1,25 +1,34 @@
 #!/usr/bin/env python
 
+import shutil
 import glob
 import os
 
-from setuptools import Command, find_packages, setup
+from pathlib import Path
+
+from setuptools import find_packages, setup
+from setuptools.command.install import install
+
+
+class CustomInstallCommand(install):
+    def run(self):
+        install.run(self)
+
+        service_file = Path(__file__).parent / "pcreporter.service"
+        user_systemd_dir = Path("/etc/systemd/user/")
+
+        shutil.copy(service_file, user_systemd_dir / "pcreporter.service")
+        print(f"Installed systemd service to {user_systemd_dir / 'pcreporter.service'}")
+
+        # Optionally reload systemd user daemon
+
+        print("To enable the service, run:")
+        print("systemctl --user daemon-reload")
+        print("systemctl --user enable pcreporter.service")
+        print("systemctl --user start pcreporter.service")
 
 
 def read(fname):
-    """
-    Read the contents of a file.
-
-    Parameters
-    ----------
-    fname : str
-        Path to file.
-
-    Returns
-    -------
-    str
-        File contents.
-    """
     with open(os.path.join(os.path.dirname(__file__), fname)) as f:
         return f.read()
 
@@ -33,20 +42,10 @@ for extra_req_file in extra_req_files:
     name = os.path.splitext(extra_req_file)[0].replace("requirements-", "", 1)
     extras_require[name] = read(extra_req_file).splitlines()
 
-# If there are any extras, add a catch-all case that includes everything.
-# This assumes that entries in extras_require are lists (not single strings),
-# and that there are no duplicated packages across the extras.
 if extras_require:
     extras_require["all"] = sorted({x for v in extras_require.values() for x in v})
 
 
-# Import meta data from __meta__.py
-#
-# We use exec for this because __meta__.py runs its __init__.py first,
-# __init__.py may assume the requirements are already present, but this code
-# is being run during the `python setup.py install` step, before requirements
-# are installed.
-# https://packaging.python.org/guides/single-sourcing-package-version/
 meta = {}
 exec(read("pcreporter/__meta__.py"), meta)
 
@@ -75,18 +74,7 @@ setup(
     long_description_content_type=long_description_content_type,
     license=meta["license"],
     url=meta["url"],
-    classifiers=[
-        # Trove classifiers
-        # Full list: https://pypi.python.org/pypi?%3Aaction=list_classifiers
-        "Natural Language :: English",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-    ],
+    cmdclass={"install": CustomInstallCommand},
     entry_points={
         "console_scripts": [
             "pc_reporter=pcreporter.cli:main",

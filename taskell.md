@@ -3,7 +3,7 @@
 
 ## Doing
 
-- features togglable with buttons
+- systemd user service
 
 ## Done
 
@@ -13,3 +13,5 @@
     > message sent to telegram to employ defensive tactics
 - temp sensor
 - lock screen
+- features togglable with buttons
+- allow TOKEN to be in state

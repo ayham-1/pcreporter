@@ -181,12 +181,14 @@ async def __main():
         logger.error("Invalid permissions, ensure normal user permissions")
         exit(1)
 
-    token = os.getenv("TELEGRAM_TOKEN")
-    if token is None:
-        logger.error("TELEGRAM_TOKEN is not set")
-        return
-
     state.read_config()
+
+    if state.TOKEN is None:
+        state.TOKEN = os.getenv("TELEGRAM_TOKEN")
+
+    if state.TOKEN is None:
+        logger.error("TELEGRAM_TOKEN is not set nor in config file")
+        return
 
     for cmd in cmds.keys():
         if len(keyboard[-1]) % 3 == 0:
@@ -194,7 +196,7 @@ async def __main():
 
         keyboard[-1].append("/" + cmd)
 
-    application = ApplicationBuilder().token(token).build()
+    application = ApplicationBuilder().token(state.TOKEN).build()
     await application.initialize()
     application.add_error_handler(error_handler)
 

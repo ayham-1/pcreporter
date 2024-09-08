@@ -14,6 +14,7 @@ this = sys.modules[__name__]
 CHAT_ID = None
 IS_DEFENSIVE = False
 CMD_LOCKSCRN = None
+TOKEN = None
 
 
 def read_config():
@@ -59,7 +60,7 @@ def read_config():
                 )
                 continue
 
-            global CHAT_ID, IS_DEFENSIVE, CMD_LOCKSCRN
+            global CHAT_ID, IS_DEFENSIVE, CMD_LOCKSCRN, TOKEN
             if line[0] == "CHAT_ID":
                 CHAT_ID = int(line[1])
             if line[0] == "IS_DEFENSIVE":
@@ -69,5 +70,7 @@ def read_config():
                     IS_DEFENSIVE = True
             if line[0] == "CMD_LOCKSCRN":
                 CMD_LOCKSCRN = line[1].strip()
+            if line[0] == "TOKEN":
+                TOKEN = line[1].strip()
 
             line_num += 1

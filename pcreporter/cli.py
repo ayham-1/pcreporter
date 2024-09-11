@@ -119,7 +119,8 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
     else:
         await update.message.reply_text(
-            "I'm sorry, I didn't understand that command. Please try again."
+            "I'm sorry, I didn't understand that command. Please try again.",
+            reply_markup=get_cmds_keyboard(),
         )
 
 
@@ -176,6 +177,44 @@ def get_cmds_keyboard():
     return ReplyKeyboardMarkup(keyboard, resize_keyboard=True, one_time_keyboard=False)
 
 
+async def is_authorized(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message is None:
+        return False
+    if update.message.chat_id == state.CHAT_ID:
+        return True
+
+    await update.message.reply_text(
+        f"You are not authorized to use this bot.\nIf this is your bot, please set the CHAT_ID in the config file to your chat id, {update.message.chat_id}."
+    )
+
+    return False
+
+async def restricted_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.message is None:
+        return
+
+    if not await is_authorized(update, context):
+        logger.warn(f"Unauthorized access from chat ID: {update.message.chat_id}")
+        return
+
+    msg = update.message.text
+    if msg is None:
+        return
+    msg = msg[1:].lower().strip()
+
+    logger.info(f"handling /{msg} from: {update.message.chat_id}")
+    for cmd, handler in cmds.items():
+        if msg.startswith(cmd):
+            await handler(update, context)
+            return
+
+    await echo(update, context)
+
+async def safe_send_msg(app, msg, **kwargs):
+    if state.CHAT_ID != None:
+        await app.bot.send_message(state.CHAT_ID, msg, **kwargs)
+
+
 async def __main():
     if not good_permissions():
         logger.error("Invalid permissions, ensure normal user permissions")
@@ -200,22 +239,17 @@ async def __main():
     await application.initialize()
     application.add_error_handler(error_handler)
 
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
-
-    for cmd, handler in cmds.items():
-        application.add_handler(CommandHandler(cmd, handler))
+    application.add_handler(
+        MessageHandler(filters.ALL, restricted_handler)
+    )
 
     try:
         import socket
 
         monitor_usb_start(application.bot)
-        await application.bot.send_message(
-            state.CHAT_ID, f"Hello, reporting as {socket.gethostname()}"
-        )
 
-        await application.bot.send_message(
-            state.CHAT_ID, "Select an option", reply_markup=get_cmds_keyboard()
-        )
+        await safe_send_msg(application, f"Hello, reporting as {socket.gethostname()}")
+        await safe_send_msg(application, "Select an option", reply_markup=get_cmds_keyboard())
 
         await asyncio.gather(
             run_polling(application),
@@ -224,9 +258,10 @@ async def __main():
     except KeyboardInterrupt:
         logger.info("Recieved Ctrl + C. Shutting down...")
     finally:
-        await application.bot.send_message(
-            state.CHAT_ID, "Farewell, bot is shutting down"
-        )
+        if state.CHAT_ID != None:
+            await application.bot.send_message(
+                state.CHAT_ID, "Farewell, bot is shutting down"
+            )
         logger.info("Shut down")
         exit(0)
 

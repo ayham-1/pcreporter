@@ -18,10 +18,8 @@ class CustomInstallCommand(install):
         user_systemd_dir = Path("/etc/systemd/user/")
 
         shutil.copy(service_file, user_systemd_dir / "pcreporter.service")
+
         print(f"Installed systemd service to {user_systemd_dir / 'pcreporter.service'}")
-
-        # Optionally reload systemd user daemon
-
         print("To enable the service, run:")
         print("systemctl --user daemon-reload")
         print("systemctl --user enable pcreporter.service")

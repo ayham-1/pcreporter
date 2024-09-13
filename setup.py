@@ -75,7 +75,7 @@ setup(
     cmdclass={"install": CustomInstallCommand},
     entry_points={
         "console_scripts": [
-            "pc_reporter=pcreporter.cli:main",
+            "pc_reporter=pcreporter.cli.main:main",
         ],
     },
 )

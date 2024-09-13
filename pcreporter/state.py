@@ -34,11 +34,6 @@ def read_config():
             os.path.join(os.environ["HOME"], ".pcreporter.conf")
         ):
             conf_to_read = os.path.join(os.environ["HOME"], ".pcreporter.conf")
-        else:
-            config_home = os.environ.get(
-                "XDG_CONFIG_HOME", os.path.join(os.path.expanduser("~"), ".config")
-            )
-            conf_to_read = os.path.join(config_home, "pcreporter.conf")
     elif platform.system() == "Windows" and os.path.exists(
         os.path.join(os.environ["APPDATA"], "pcreporter.conf")
     ):

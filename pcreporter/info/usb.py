@@ -11,6 +11,6 @@ def info_usb():
 
     result_str = "<b>USB Devices:</b>\n"
     for device_id, device_info in devices_dict.items():
-        result_str += f"{device_id} -- {device_info[ID_MODEL]} ({device_info[ID_MODEL_ID]} - {device_info[ID_VENDOR_ID]}\n"
+        result_str += f"{device_id} -- {device_info[ID_MODEL]} ({device_info[ID_MODEL_ID]} - {device_info[ID_VENDOR_ID]})\n"
 
     return result_str

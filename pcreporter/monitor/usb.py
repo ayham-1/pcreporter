@@ -7,6 +7,8 @@ from usbmonitor.attributes import ID_MODEL, ID_MODEL_ID, ID_VENDOR_ID
 
 import pcreporter.state as state
 
+from pcreporter.cli.sendmsg import send_msg_safe
+
 logger = logging.getLogger("pcreporter")
 
 monitor = None
@@ -37,47 +39,20 @@ def __usb_on_connect(device_id, device_info):
     if not telegram_bot or not state.CHAT_ID:
         return
 
-    try:
-        asyncio.run(
-            telegram_bot.send_message(
-                state.CHAT_ID,
-                "Detected new USB connection: "
-                + device_info_str(device_info=device_info),
-            )
-        )
-        if state.IS_DEFENSIVE:
-            asyncio.run(
-                telegram_bot.send_message(
-                    state.CHAT_ID, "Defensive mode enabled, shutting down..."
-                )
-            )
-            __usb_defensive()
-    except Exception as _:
-        pass
-
+    send_msg_safe(f"Detected new USB connection: {device_info_str(device_info=device_info)}, {device_id}")
+    if state.IS_DEFENSIVE:
+        send_msg_safe("Defensive mode enabled, shutting down...")
+        __usb_defensive()
 
 def __usb_on_disconnect(device_id, device_info):
     assert not state is None
     if not telegram_bot or not state.CHAT_ID:
         return
 
-    try:
-        asyncio.run(
-            telegram_bot.send_message(
-                state.CHAT_ID,
-                "Detected USB disconnection: "
-                + device_info_str(device_info=device_info),
-            )
-        )
-        if state.IS_DEFENSIVE:
-            asyncio.run(
-                telegram_bot.send_message(
-                    state.CHAT_ID, "Defensive mode enabled, shutting down..."
-                )
-            )
-            __usb_defensive()
-    except Exception as _:
-        pass
+    send_msg_safe(f"Detected USB disconnection: {device_info_str(device_info=device_info)}, {device_id}")
+    if state.IS_DEFENSIVE:
+        send_msg_safe("Defensive mode enabled, shutting down...")
+        __usb_defensive()
 
 
 def monitor_usb_start(bot):

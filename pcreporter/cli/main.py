@@ -10,18 +10,12 @@ logging.basicConfig(
 logger = logging.getLogger("pcreporter")
 
 from telegram import (
-    ForceReply,
     Update,
-    KeyboardButton,
     ReplyKeyboardMarkup,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
 )
 from telegram.ext import (
     MessageHandler,
     ApplicationBuilder,
-    CommandHandler,
-    CallbackQueryHandler,
     ContextTypes,
     filters,
 )
@@ -37,6 +31,8 @@ from pcreporter.fn.shutdown import fn_shutdown
 
 
 import pcreporter.state as state
+
+from pcreporter.cli.sendmsg import *
 
 
 async def cmd_overview(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -210,11 +206,6 @@ async def restricted_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
     await echo(update, context)
 
-async def safe_send_msg(app, msg, **kwargs):
-    if state.CHAT_ID != None:
-        await app.bot.send_message(state.CHAT_ID, msg, **kwargs)
-
-
 async def __main():
     if not good_permissions():
         logger.error("Invalid permissions, ensure normal user permissions")
@@ -247,9 +238,10 @@ async def __main():
         import socket
 
         monitor_usb_start(application.bot)
+        send_msg_init(application.bot, asyncio.get_event_loop())
 
-        await safe_send_msg(application, f"Hello, reporting as {socket.gethostname()}")
-        await safe_send_msg(application, "Select an option", reply_markup=get_cmds_keyboard())
+        send_msg_safe(f"Hello, reporting as {socket.gethostname()}")
+        send_msg_safe("Select an option", reply_markup=get_cmds_keyboard())
 
         await asyncio.gather(
             run_polling(application),

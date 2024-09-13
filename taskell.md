@@ -1,11 +1,10 @@
 ## To Do
 
-- split up cli file
 - add a programs list cmd
 
 ## Doing
 
-- only allow messages from CHAT_ID
+- split up cli file
 
 ## Done
 
@@ -18,3 +17,4 @@
 - features togglable with buttons
 - allow TOKEN to be in state
 - systemd user service
+- only allow messages from CHAT_ID

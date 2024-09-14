@@ -12,30 +12,33 @@ from telegram.ext import (
 from pcreporter.info.overview import info_overview
 from pcreporter.info.temp import info_temp
 from pcreporter.info.usb import info_usb
-
+from pcreporter.info.programs import info_programs
 
 from pcreporter.fn.lock_screen import fn_lock_screen
 from pcreporter.fn.shutdown import fn_shutdown
 
 async def cmd_overview(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send the overview message when the command /overview is issued."""
     if update.message is None:
         return
     await update.message.reply_html(info_overview(), reply_markup=get_cmds_keyboard())
 
 
 async def cmd_temp(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send the temp message when the command /overview is issued."""
     if update.message is None:
         return
     await update.message.reply_html(info_temp(), reply_markup=get_cmds_keyboard())
 
 
 async def cmd_usb(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send the overview message when the command /usb is issued."""
     if update.message is None:
         return
     await update.message.reply_html(info_usb(), reply_markup=get_cmds_keyboard())
+
+async def cmd_programs(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    if update.message is None:
+        return
+    await update.message.reply_html(info_programs(), reply_markup=get_cmds_keyboard())
+
 
 
 async def cmd_defensive_enable(
@@ -108,6 +111,7 @@ cmds = {
     "ping": cmd_overview,
     "temp": cmd_temp,
     "usb": cmd_usb,
+    "programs": cmd_programs,
     "lockscrn": cmd_fn_lock_screen,
     "shutdown": cmd_fn_shutdown,
 }

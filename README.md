@@ -26,10 +26,10 @@ TOKEN=<telegram bot token>
 To get the CHAT_ID value, run the bot with CHAT_ID of 0 and send a message to it. The CHAT_ID will be reported in the terminal and messaged back to the user on Telegram.
 
 The config file could be placed in the following locations:
-- /etc/pcreporter/pcreporter.conf
+- /etc/pcreporter.conf
 - ~/.config/pcreporter.conf
 - ~/.pcreporter.conf
-- <current working directory>/pcreporter.conf
+- (current working directory)/pcreporter.conf
 
 4. Run the bot.
 > **Warning**

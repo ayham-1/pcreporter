@@ -22,18 +22,16 @@ def read_config():
     conf_to_read = None
 
     if not platform.system() == "Windows":
-        if os.path.exists("/etc/pcreporter/pcreporter.conf"):
-            conf_to_read = "/etc/pcreporter/pcreporter.conf"
-        elif "XDG_CONFIG_HOME" in os.environ and os.path.exists(
-            os.path.join(os.environ["XDG_CONFIG_HOME"], "pcreporter.conf")
+        if os.path.exists("/etc/pcreporter.conf"):
+            conf_to_read = "/etc/pcreporter.conf"
+        elif os.path.exists(
+            os.path.expanduser("~/.config/pcreporter.conf")
         ):
-            conf_to_read = os.path.join(
-                os.environ["XDG_CONFIG_HOME"], "pcreporter.conf"
-            )
-        elif "HOME" in os.environ and os.path.exists(
-            os.path.join(os.environ["HOME"], ".pcreporter.conf")
+            conf_to_read = os.path.expanduser("~/.config/pcreporter.conf")
+        elif os.path.exists(
+            os.path.expanduser("~/.pcreporter.conf")
         ):
-            conf_to_read = os.path.join(os.environ["HOME"], ".pcreporter.conf")
+            conf_to_read = os.path.expanduser("~/.pcreporter.conf")
     elif platform.system() == "Windows" and os.path.exists(
         os.path.join(os.environ["APPDATA"], "pcreporter.conf")
     ):
@@ -42,7 +40,7 @@ def read_config():
     if conf_to_read == None and os.path.exists("pcreporter.conf"):
         conf_to_read = "pcreporter.conf"
     elif conf_to_read == None:
-        raise FileNotFoundError(f"Configuration, {conf_to_read}, file not found.")
+        raise FileNotFoundError(f"No configuration file not found.")
 
     with open(conf_to_read, "r") as f:
         line_num = 1

@@ -14,7 +14,11 @@ Telegram BOT as a personal computer reporting service.
 
 ## Setup:
 
-1. Install the package from the AUR or pypi.
+1. Install the package from PyPi.
+```
+pipx install pcreporter
+```
+
 2. Create a bot on Telegram and get the token.
 3. Create config file in the following format:
 ```
@@ -38,8 +42,6 @@ The config file could be placed in the following locations:
 
 ### Setup Tip: Using SystemD User Services
 To run the bot as a user service, copy the file `pcreporter.service` form this repository to `~/.config/systemd/user/pcreporter.service` and enable it with `systemctl --user enable --now pcreporter.service`.
-
-If using the AUR package, the service file will be installed to the correct location.
 
 
 ## Maintainers:

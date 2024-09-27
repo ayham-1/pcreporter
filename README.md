@@ -38,3 +38,10 @@ The config file could be placed in the following locations:
 
 ## Maintainers:
 - [ayham-1](https://me@ayham.xyz)
+
+## Used Python Packages:
+- python-telegram-bot
+- psutil
+- requests
+- uptime
+- usb-monitor

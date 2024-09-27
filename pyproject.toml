@@ -1,8 +1,31 @@
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-# pyproject.toml
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "--failed-first"
+[project]
+name = "pcreporter"
+version = "20240124"
+dependencies = [
+	'psutil',
+	'python-telegram-bot==21.3',
+	'requests',
+	'uptime',
+	'usb-monitor',
+]
+requires-python = ">=3.8"
+authors = [
+{name = "ayham", email = "me@ayham.xyz"},
+]
+maintainers = [
+{name = "ayham", email = "me@ayham.xyz"},
+]
+description = "Telegram BOT as a personal computer reporting service."
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["security"]
+
+[project.urls]
+Homepage = "https://github.com/ayham-1/pcreporter"
+
+[project.scripts]
+pc_reporter = "pcreporter.cli.main:main"

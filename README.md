@@ -39,6 +39,8 @@ The config file could be placed in the following locations:
 ### Setup Tip: Using SystemD User Services
 To run the bot as a user service, copy the file `pcreporter.service` form this repository to `~/.config/systemd/user/pcreporter.service` and enable it with `systemctl --user enable --now pcreporter.service`.
 
+If using the AUR package, the service file will be installed to the correct location.
+
 
 ## Maintainers:
 - [ayham-1](https://me@ayham.xyz)

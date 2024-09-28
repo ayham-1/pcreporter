@@ -17,6 +17,8 @@ from pcreporter.info.programs import info_programs
 from pcreporter.fn.lock_screen import fn_lock_screen
 from pcreporter.fn.shutdown import fn_shutdown
 
+import pcreporter.state as state
+
 async def cmd_overview(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     if update.message is None:
         return

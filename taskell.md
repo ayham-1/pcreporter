@@ -18,3 +18,5 @@
 - only allow messages from CHAT_ID
 - split up cli file
 - add a programs list cmd
+- multiple keyboard setup
+- setup tailscale cmds

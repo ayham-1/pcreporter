@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pcreporter"
-version = "20240928"
+version = "20241004"
 dependencies = [
 	'psutil',
 	'python-telegram-bot==21.3',

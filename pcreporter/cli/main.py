@@ -1,3 +1,4 @@
+import importlib.util
 import traceback
 import logging
 import os
@@ -96,14 +97,24 @@ async def restricted_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
             await handler(update, context)
             return
 
+    for cmd, handler in cmds_tailscale.items():
+        if msg.startswith(cmd):
+            await handler(update, context)
+            return
+
     await lump_handler(update, context)
 
+
 async def __main():
+    version = importlib.util.find_spec("version")
+    logger.info(f"Version: {version}")
+
     if not good_permissions():
         logger.error("Invalid permissions, ensure normal user permissions")
         exit(1)
 
     state.read_config()
+
 
     if state.TOKEN is None:
         state.TOKEN = os.getenv("TELEGRAM_TOKEN")
